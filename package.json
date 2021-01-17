@@ -1,0 +1,42 @@
+{
+  "name": "lucene-parser",
+  "version": "1.0.0",
+  "description": "Parser for lucene syntax",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "eslint src/**/*.ts --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/machuga/lucene-parser.git"
+  },
+  "keywords": [
+    "lucene"
+  ],
+  "author": "Matt Machuga",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/machuga/lucene-parser/issues"
+  },
+  "homepage": "https://github.com/machuga/lucene-parser#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.21",
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "eslint": "^7.18.0",
+    "husky": "^4.3.8",
+    "jest": "^26.6.3",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.1.3"
+  }
+}

@@ -1,4 +1,4 @@
-import { NodeType, Query, LogicalAndOperator, LogicalNotOperator, LogicalOrOperator, UnaryExpression, BinaryExpression, FieldGroup, Phrase, Expression, Regex, UnquotedTerm, RangeLeftTerm, RangeRightTerm, RangeTerm, BinaryRange, UnaryRange, RangeOperator, TermAtom } from './types';
+import { NodeType, Query, LogicalAndOperator, LogicalNotOperator, LogicalOrOperator, UnaryExpression, BinaryExpression, FieldGroup, Phrase, Expression, Regex, UnquotedTerm, RangeLeftTerm, RangeRightTerm, RangeTerm, BinaryRange, UnaryRange, RangeOperator, TermAtom } from './parserTypes';
 
 const implicit = '*';
 

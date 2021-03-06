@@ -1,7 +1,7 @@
 import { createTokenizer } from './tokenizer';
 import { Tokenizer, TokenType, Token, RelationalOperator } from './tokenizerTypes';
-import { RangeOperator, Query, Phrase, Expression, Regex, UnquotedTerm, LogicalOrValue, LogicalAndValue, BinaryRange, UnaryRange, TermAtom } from './types';
-import { createUnaryExpression, createQuery, createRegex, createPhrase, createTerm, createFieldGroup, createBinaryRange, createUnaryRange, createRangeTerm, createBinaryExpression, createLogicalAndOperator, createLogicalNotOperator, createLogicalOrOperator } from './tokenConstructors';
+import { RangeOperator, Query, Phrase, Expression, Regex, UnquotedTerm, LogicalOrValue, LogicalAndValue, BinaryRange, UnaryRange, TermAtom } from './parserTypes';
+import { createUnaryExpression, createQuery, createRegex, createPhrase, createTerm, createFieldGroup, createBinaryRange, createUnaryRange, createRangeTerm, createBinaryExpression, createLogicalAndOperator, createLogicalNotOperator, createLogicalOrOperator } from './astConstructors';
 
 const implicit = '*';
 

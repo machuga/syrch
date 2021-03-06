@@ -1,4 +1,4 @@
-import { parse } from '../parser';
+import { parse } from '../../lucene/parser';
 
 describe('The parser', function() {
   it('identifies fielded terms', function() {

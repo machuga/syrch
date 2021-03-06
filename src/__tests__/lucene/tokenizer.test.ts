@@ -1,4 +1,4 @@
-import { createTokenizer } from '../tokenizer';
+import { createTokenizer } from '../../lucene/tokenizer';
 
 describe('The tokenizer/lexer', function() {
   describe('iterating over tokens', function() {

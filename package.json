@@ -1,7 +1,7 @@
 {
-  "name": "lucene-parser",
+  "name": "syrch",
   "version": "1.0.0",
-  "description": "Parser for lucene syntax",
+  "description": "Parser and AST for search syntax",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/machuga/lucene-parser.git"
+    "url": "git+https://github.com/machuga/syrch.git"
   },
   "keywords": [
     "lucene"
@@ -24,9 +24,9 @@
   "author": "Matt Machuga",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/machuga/lucene-parser/issues"
+    "url": "https://github.com/machuga/syrch/issues"
   },
-  "homepage": "https://github.com/machuga/lucene-parser#readme",
+  "homepage": "https://github.com/machuga/syrch#readme",
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.21",

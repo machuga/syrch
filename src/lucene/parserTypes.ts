@@ -1,5 +1,3 @@
-import { TokenType } from './tokenizerTypes';
-
 export enum NodeType {
   QuotedTerm = 'QuotedTerm', // Switch to Phrase
   UnquotedTerm = 'UnquotedTerm',
@@ -45,13 +43,13 @@ export type BinaryExpression = {
   operator: LogicalAndOperator | LogicalOrOperator;
   left: Expression;
   right: Expression;
-}
+};
 
 export type UnaryExpression = {
   type: NodeType.UnaryExpression;
   operator: LogicalNotOperator;
   operand: Expression;
-}
+};
 
 export type RangeOperator = 'ge' | 'gt' | 'le' | 'lt';
 
@@ -59,14 +57,14 @@ export type Term = UnquotedTerm | Phrase | Regex | FieldGroup;
 export type TermAtom = UnquotedTerm | Phrase;
 
 export type Fielded<T> = T & {
-  field: boolean
-}
+  field: boolean;
+};
 
 export type UnaryRange = {
   type: NodeType.UnaryRange;
   field: string;
   operand: RangeTerm;
-}
+};
 
 export type RangeTerm = RangeLeftTerm | RangeRightTerm;
 
@@ -74,21 +72,20 @@ export type RangeLeftTerm = {
   type: NodeType.RangeTerm;
   operand: Omit<TermAtom, 'field'>;
   operator: RangeOperator;
-}
+};
 
 export type RangeRightTerm = {
   type: NodeType.RangeTerm;
   operand: Omit<TermAtom, 'field'>;
   operator: RangeOperator;
-}
-
+};
 
 export type BinaryRange = {
   type: NodeType.BinaryRange;
   field: string;
   left: RangeTerm;
   right: RangeTerm;
-}
+};
 
 export type UnquotedTerm = {
   type: NodeType.UnquotedTerm;
@@ -113,4 +110,3 @@ export type FieldGroup = {
   field: string;
   body: Expression;
 };
-

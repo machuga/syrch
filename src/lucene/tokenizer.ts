@@ -1,8 +1,31 @@
 import { TokenType, Token, Tokenizer } from './tokenizerTypes';
 
-const reservedChars = ['.', '?', '+', '*', '|', '{', '}', '[', ']', '(', ')', '"', '\\', '#', '@', '&', '<', '>', '~', ':'];
-const reservedCharsForRegex = '.?+*|{}[\]()"\\#@&<>~:';
-const rules : [RegExp, TokenType][] = [
+const reservedChars = [
+  '.',
+  '?',
+  '+',
+  '*',
+  '|',
+  '{',
+  '}',
+  '[',
+  ']',
+  '(',
+  ')',
+  '"',
+  '\\',
+  '#',
+  '@',
+  '&',
+  '<',
+  '>',
+  '~',
+  ':',
+];
+
+const reservedCharsForRegex = '.?+*|{}[]()"\\#@&<>~:';
+
+const rules: [RegExp, TokenType][] = [
   //[/^\d+/, TokenType.Number],
   [/^\s+/, TokenType.Whitespace],
   [/^"[^"]*"/, TokenType.QuotedString],
@@ -21,15 +44,15 @@ const rules : [RegExp, TokenType][] = [
   [/^TO/, TokenType.RangeTo],
   [/^(>|<)=?/, TokenType.RelationalOperator],
   [/^(.[^.?+*|{}[\]()"\\#@&<>~:\s]+)/, TokenType.Identifier], // does not handle escaped tokens
-]
+];
 
-export const createTokenizer = (input : string) : Tokenizer => {
+export const createTokenizer = (input: string): Tokenizer => {
   const inputLength = input.length;
   let cursor = 0;
 
   const location = () => cursor;
   const isEOF = () => cursor >= inputLength;
-  const match = (regex : RegExp, str: string) => {
+  const match = (regex: RegExp, str: string) => {
     const [result = null] = regex.exec(str) || [];
 
     if (result === null) {
@@ -41,7 +64,7 @@ export const createTokenizer = (input : string) : Tokenizer => {
     return result;
   };
 
-  const next = () : Token | null => {
+  const next = (): Token | null => {
     if (isEOF()) {
       return null;
     }

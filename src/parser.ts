@@ -1,5 +1,7 @@
 import { createTokenizer } from './tokenizer';
-import { Query, Phrase, Expression, Term, Token, Regex, TokenType, UnquotedTerm, BinaryRange, UnaryRange, TermAtom, RangeTerm, Tokenizer } from './types';
+import { Tokenizer, TokenType, Token, RelationalOperator } from './tokenizerTypes';
+import { RangeOperator, Query, Phrase, Expression, Regex, UnquotedTerm, LogicalOrValue, LogicalAndValue, BinaryRange, UnaryRange, TermAtom } from './types';
+import { createUnaryExpression, createQuery, createRegex, createPhrase, createTerm, createFieldGroup, createBinaryRange, createUnaryRange, createRangeTerm, createBinaryExpression, createLogicalAndOperator, createLogicalNotOperator, createLogicalOrOperator } from './tokenConstructors';
 
 const implicit = '*';
 
@@ -49,20 +51,15 @@ export const parseFromTokenizer = (tokenizer : Tokenizer) : Query => {
     let left : any = andClause();
 
     while (lookahead && lookahead.type !== TokenType.GroupClose) {
-      let operator = { type: 'LogicalOr', value: 'OR', implicit: true };
+      let operator = createLogicalOrOperator('OR', true);
 
       if (lookahead.type === TokenType.LogicalOr) {
-        operator = { ...consume(TokenType.LogicalOr), implicit: false };
+        operator = createLogicalOrOperator(<LogicalOrValue>consume(TokenType.LogicalOr).value);
       }
 
       const right = andClause();
 
-      left = {
-        type: "BinaryExpression",
-        operator,
-        left,
-        right,
-      };
+      left = createBinaryExpression(left, right, operator);
     }
 
     return left;
@@ -72,15 +69,10 @@ export const parseFromTokenizer = (tokenizer : Tokenizer) : Query => {
     let left = notClause();
 
     while (lookahead && lookahead.type === TokenType.LogicalAnd) {
-      const operator = consume(TokenType.LogicalAnd);
+      const operator = createLogicalAndOperator(<LogicalAndValue>consume(TokenType.LogicalAnd).value);
       const right = andClause();
 
-      left = {
-        type: "BinaryExpression",
-        operator,
-        left,
-        right,
-      };
+      left = createBinaryExpression(left, right, operator);
     }
 
     return left;
@@ -88,14 +80,10 @@ export const parseFromTokenizer = (tokenizer : Tokenizer) : Query => {
 
   const notClause = () => {
     if (lookahead && lookahead.type === TokenType.LogicalNot) {
-      const operator = consume(TokenType.LogicalNot);
+      consume(TokenType.LogicalNot); // throwaway for now
       const operand = basicExpression();
 
-      return {
-        type: "UnaryExpression",
-        operator,
-        operand,
-      }
+      return createUnaryExpression(operand, createLogicalNotOperator());
     }
 
     if (lookahead && lookahead.type === TokenType.GroupOpen) {
@@ -109,43 +97,42 @@ export const parseFromTokenizer = (tokenizer : Tokenizer) : Query => {
   //const unaryExpression = (type) => { };
   const binaryRangeTerm = (field) : BinaryRange => {
     const openToken = consume(TokenType.RangeOpen);
-    const left = rangeTerm();
+    const left : TermAtom = termInRange();
     consume(TokenType.RangeTo);
-    const right = rangeTerm();
+    const right : TermAtom = termInRange();
     const closeToken = consume(TokenType.RangeClose);
 
-    return {
-      type: 'BinaryRange',
-      field,
-      left: { ...left, inclusive: openToken.value === '[' },
-      right: { ...right, inclusive: closeToken.value === ']' },
-    };
+    return createBinaryRange(
+      createRangeTerm(left, openToken.value === '[' ? 'ge' : 'gt'),
+      createRangeTerm(right, closeToken.value === ']' ? 'le' : 'lt'),
+      field
+    );
   };
+
+  const relationalOperatorMap = new Map<RelationalOperator, RangeOperator>([
+    ['>', 'gt'],
+    ['>=', 'ge'],
+    ['<', 'lt'],
+    ['<=', 'le'],
+  ]);
 
   const unaryRangeTerm = (field) : UnaryRange => {
-    const { value: operator } = consume(TokenType.RelationalOperator);
-    // Need to parse for unquotedTerm
+    const { value } = consume(TokenType.RelationalOperator);
 
-    return {
-      type: 'UnaryRange',
-      field,
-      operand: {...rangeTerm(), inclusive: operator.length > 1 },
-      direction: operator.startsWith('>') ? 'gt' : 'lt',
-    };
+    return createUnaryRange(
+      createRangeTerm(termInRange(), relationalOperatorMap.get(<RelationalOperator>value)),
+      field
+    );
   };
 
-  const rangeTerm = () : Omit<RangeTerm, 'inclusive'> => {
+  const termInRange = () : TermAtom => {
     const term : TermAtom = termExpr();
 
     if (lookahead && lookahead.type === TokenType.FieldSeparator) {
       throw new Error('Fielded term detected inside of range');
     }
 
-    return {
-      type: 'RangeTerm',
-      quoted: term.type === 'QuotedTerm',
-      value: term.value
-    };
+    return term;
   }
 
   const termExpr = (field = undefined) : TermAtom => {
@@ -172,52 +159,32 @@ export const parseFromTokenizer = (tokenizer : Tokenizer) : Query => {
         case TokenType.Regex: return regexTerm(field);
         case TokenType.QuotedString: return quotedTerm(field);
         case TokenType.Identifier: return unquotedTerm(field);
-        case TokenType.GroupOpen: return { type: 'FieldGroup', field, body: parenExpr() };
+        case TokenType.GroupOpen: return createFieldGroup(parenExpr(), field);
       }
     }
 
-    return {
-      type: TokenType.QuotedString === token.type ? 'QuotedTerm' : 'UnquotedTerm',
-      field: implicit,
-      value: token.value
-    }
+    return TokenType.QuotedString === token.type ? createPhrase(token.value) : createTerm(token.value);
   };
 
   const regexTerm = (field = implicit) : Regex => {
     const token = consume(TokenType.Regex);
 
-    return {
-      type: 'RegexTerm',
-      field,
-      value: token.value
-    }
+    return createRegex(token.value, field);
   };
+
   const unquotedTerm = (field = undefined) : UnquotedTerm => {
     const token = consume(TokenType.Identifier);
 
-    return {
-      type: 'UnquotedTerm',
-      field,
-      value: token.value
-    }
+    return createTerm(token.value, field);
   };
 
   const quotedTerm = (field = undefined) : Phrase => {
     const token = consume(TokenType.QuotedString);
 
-    return {
-      type: 'QuotedTerm',
-      field,
-      value: token.value.slice(1, -1)
-    }
+    return createPhrase(token.value.slice(1, -1), field);
   };
 
-  const query = () : Query => {
-    return {
-      type: 'Query',
-      body: expression()
-    }
-  };
+  const query = () : Query => createQuery(expression());
 
   return query();
 }

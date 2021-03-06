@@ -1,58 +1,5 @@
 import { parse } from '../parser';
 
-const simpleTree = (node) => {
-  if (!node) {
-    return null;
-  }
-
-  if (node.type === 'Query') {
-    return simpleTree(node.body);
-  }
-
-  if (node.type.startsWith('BinaryRange') || node.left) {
-    return {
-      left: simpleTree(node.left),
-      operator: node.operator.value,
-      right: simpleTree(node.right),
-    };
-  }
-
-  if (node.type === 'UnaryRange') {
-    let operator = node.direction === 'gt' ? '>' : '<';
-    operator += node.operand.inclusive ? '=' : '';
-
-    return {
-      operand: simpleTree(node.operand),
-      operator: operator
-    };
-  }
-
-  if (node.type === 'UnaryExpression') {
-    return {
-      operand: simpleTree(node.operand),
-      operator: node.operator.value
-    };
-  }
-
-  if (node.body && node.body.value) {
-    if (node.type.startsWith("Quoted")) {
-      return `"${node.body.value}"`;
-    }
-
-    return node.body.value;
-  }
-
-  if (node.value) {
-    if (node.type.startsWith("Quoted")) {
-      return `"${node.value}"`;
-    }
-
-    return node.value;
-  }
-
-  return node;
-};
-
 describe('The parser', function() {
   it('identifies fielded terms', function() {
     expect(parse('foo:bar')).toEqual({
@@ -115,15 +62,19 @@ describe('The parser', function() {
         field: 'foo',
         left: {
           type: 'RangeTerm',
-          value: 'bar',
-          quoted: false,
-          inclusive: true,
+          operand: {
+            type: 'UnquotedTerm',
+            value: 'bar',
+          },
+          operator: 'ge'
         },
         right: {
           type: 'RangeTerm',
-          value: 'baz',
-          quoted: true,
-          inclusive: false,
+          operator: 'lt',
+          operand: {
+            type: 'QuotedTerm',
+            value: 'baz',
+          },
         }
       }
     });
@@ -135,12 +86,13 @@ describe('The parser', function() {
       body: {
         type: 'UnaryRange',
         field: 'foo',
-        direction: 'gt',
         operand: {
           type: 'RangeTerm',
-          quoted: false,
-          inclusive: true,
-          value:'bar'
+          operand: {
+            type: 'UnquotedTerm',
+            value: 'bar'
+          },
+          operator: 'ge'
         }
       }
     });
@@ -341,3 +293,58 @@ describe('The parser', function() {
     });
   });
 });
+
+const simpleTree = (node) => {
+  if (!node) {
+    return null;
+  }
+
+  if (node.type === 'Query') {
+    return simpleTree(node.body);
+  }
+
+  if (node.type.startsWith('BinaryRange') || node.left) {
+    return {
+      left: simpleTree(node.left),
+      operator: node.operator.value,
+      right: simpleTree(node.right),
+    };
+  }
+
+  if (node.type === 'UnaryRange') {
+    let operator = node.direction === 'gt' ? '>' : '<';
+    operator += node.operand.inclusive ? '=' : '';
+
+    return {
+      operand: simpleTree(node.operand),
+      operator: operator
+    };
+  }
+
+  if (node.type === 'UnaryExpression') {
+    return {
+      operand: simpleTree(node.operand),
+      operator: node.operator.value
+    };
+  }
+
+  if (node.body && node.body.value) {
+    if (node.type.startsWith("Quoted")) {
+      return `"${node.body.value}"`;
+    }
+
+    return node.body.value;
+  }
+
+  if (node.value) {
+    if (node.type.startsWith("Quoted")) {
+      return `"${node.value}"`;
+    }
+
+    return node.value;
+  }
+
+  return node;
+};
+
+

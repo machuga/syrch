@@ -1,4 +1,4 @@
-import { TokenType, Token, Tokenizer } from './types';
+import { TokenType, Token, Tokenizer } from './tokenizerTypes';
 
 const reservedChars = ['.', '?', '+', '*', '|', '{', '}', '[', ']', '(', ')', '"', '\\', '#', '@', '&', '<', '>', '~', ':'];
 const reservedCharsForRegex = '.?+*|{}[\]()"\\#@&<>~:';

@@ -18,7 +18,7 @@ describe('The tokenizer/lexer', function() {
       });
     });
 
-    it.only('detects fielded binary ranges', function() {
+    it('detects fielded binary ranges', function() {
       const tokenizer = createTokenizer('foo:[bar TO "baz"}');
       expect(tokenizer.next()).toEqual({
         type: 'Identifier',
